@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { eventId, customerId, redirectUrl } = body;
+        const { eventId, customerId, registrationId, redirectUrl } = body;
 
         // Base domain for redirection
         const origin = request.headers.get('origin') || 'http://localhost:3000';
@@ -24,17 +24,18 @@ export async function POST(request: Request) {
                             name: 'Event Registration',
                             description: 'Access to event photos',
                         },
-                        unit_amount: 1000, // $10.00 (We can make this dynamic later)
+                        unit_amount: 1000,
                     },
                     quantity: 1,
                 },
             ],
             mode: 'payment',
             success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/register?canceled=true`,
+            cancel_url: `${origin}?canceled=true`,
             metadata: {
                 eventId,
                 customerId,
+                registrationId
             },
         });
 

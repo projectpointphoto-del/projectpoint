@@ -43,8 +43,28 @@ export default function Home() {
             const data = await res.json();
 
             if (data.success) {
-                setQrData(data.qrData);
-                setStep('SUCCESS');
+                // PHASE 2: REDIRECT TO STRIPE
+                const checkoutRes = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        registrationId: data.id,
+                        // We might need customerId if the API returns it, 
+                        // but registrationId contains the link to customer/event.
+                        // Let's rely on registrationId for verification.
+                        // Ideally we pass what we have.
+                    })
+                });
+
+                const checkoutData = await checkoutRes.json();
+
+                if (checkoutData.url) {
+                    window.location.href = checkoutData.url;
+                } else {
+                    alert('Payment Error: ' + (checkoutData.error || 'Could not initiate checkout'));
+                }
+
+                // Old logic: setQrData(data.qrData); setStep('SUCCESS');
             } else {
                 alert('Registration Failed: ' + (data.error || 'Unknown error'));
             }
