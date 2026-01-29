@@ -42,9 +42,16 @@ export async function POST(request: Request) {
             targetEventId = defaultEvent.id;
         }
 
-        // 3. Create Registration
-        const registration = await prisma.registration.create({
-            data: {
+        // 3. Create or Find Registration
+        const registration = await prisma.registration.upsert({
+            where: {
+                eventId_customerId: {
+                    eventId: targetEventId,
+                    customerId: customer.id
+                }
+            },
+            update: {}, // No changes if exists, we just want the ID
+            create: {
                 customerId: customer.id,
                 eventId: targetEventId,
                 qrCode: 'TEMP_HOLDER',
@@ -70,8 +77,11 @@ export async function POST(request: Request) {
             qrData: actualQrData
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Registration Error:', error);
-        return NextResponse.json({ success: false, error: 'Registration failed' }, { status: 500 });
+        return NextResponse.json({
+            success: false,
+            error: error.message || 'Registration failed'
+        }, { status: 500 });
     }
 }
