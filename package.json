@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "prisma generate && prisma db push",
-    "start": "next start",
+    "postinstall": "prisma generate",
+    "start": "prisma db push && next start",
     "lint": "eslint"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
     "jsqr": "^1.4.0",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
+    "prisma": "5.10.0",
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -27,7 +28,6 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "prisma": "5.10.0",
     "typescript": "^5"
   }
 }
