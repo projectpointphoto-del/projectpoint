@@ -36,25 +36,31 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        // Use provided slug or generate one
-        let slug = body.slug;
-        if (!slug) {
-            slug = body.name.toLowerCase().replace(/ /g, '-') + '-' + Math.floor(Math.random() * 1000);
+        // If ID is provided (e.g. "walk-in-2023-10-27"), upsert it.
+        // Otherwise, create new auto-ID event.
+        if (body.id) {
+            const event = await prisma.event.upsert({
+                where: { id: body.id },
+                update: {},
+                create: {
+                    id: body.id,
+                    name: body.name,
+                    date: new Date(body.date),
+                    type: body.type
+                }
+            });
+            return NextResponse.json(event);
+        } else {
+            const event = await prisma.event.create({
+                data: {
+                    name: body.name,
+                    date: new Date(body.date),
+                    type: body.type
+                }
+            });
+            return NextResponse.json(event);
         }
 
-        // Use upsert to prevent duplicates if slug matches (Essential for Walk-in days)
-        const event = await prisma.event.upsert({
-            where: { slug: slug },
-            update: {}, // No updates, just return existing
-            create: {
-                name: body.name,
-                date: new Date(body.date),
-                type: body.type,
-                slug: slug
-            }
-        });
-
-        return NextResponse.json(event);
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
