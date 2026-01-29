@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id            String         @id @default(cuid())
+  name          String
+  date          DateTime
+  type          String         // "FIELD" or "OFFICE"
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  registrations Registration[]
+}
+
+
+
+model Customer {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  phone         String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  registrations Registration[]
+}
+
+model Registration {
+  id            String   @id @default(cuid())
+  eventId       String
+  customerId    String
+  status        String   @default("PENDING") // PENDING, PAID, COMPLETED
+  stripeSessionId String? // For tracking payment
+  qrCode        String?  // The generated ID string
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  event         Event    @relation(fields: [eventId], references: [id])
+  customer      Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([eventId, customerId])
+}
+
+model Photo {
+  id           String    @id @default(cuid())
+  url          String
+  thumbnailUrl String?
+  takenAt      DateTime? // From EXIF
+  uploadedAt   DateTime  @default(now())
+  
+  event        Event     @relation(fields: [eventId], references: [id])
+  eventId      String
+  
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId   String?
+}

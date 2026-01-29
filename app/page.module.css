@@ -1,0 +1,217 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 3rem;
+    font-size: 3rem;
+    line-height: 1;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.container {
+    width: 100%;
+    max-width: 450px;
+    padding: 2.5rem;
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    animation: bgGlow 4s infinite alternate;
+}
+
+@keyframes bgGlow {
+    from {
+        box-shadow: 0 0 20px rgba(57, 255, 20, 0.05);
+    }
+
+    to {
+        box-shadow: 0 0 25px rgba(57, 255, 20, 0.15);
+    }
+}
+
+.title {
+    font-family: var(--font-sub);
+    font-size: 2rem;
+    color: var(--color-white);
+    border-bottom: 1px solid var(--color-gray-grid);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.inputGroup label {
+    font-family: var(--font-body);
+    color: var(--color-neon-green);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.inputGroup input,
+.inputGroup select,
+.select {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--color-gray-grid);
+    color: var(--color-white);
+    padding: 0.8rem;
+    outline: none;
+    transition: all 0.2s ease;
+    border-radius: 0;
+    /* Strict angular look */
+    appearance: none;
+    /* Custom dropdown arrow would be nicer but default is cleaner for now */
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus {
+    border-color: var(--color-crimson);
+    box-shadow: 0 0 10px rgba(220, 20, 60, 0.3);
+}
+
+.button {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--color-crimson);
+    color: var(--color-white);
+    border: none;
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition: transform 0.1s ease, background 0.2s;
+    width: 100%;
+}
+
+.buttonOutline {
+    background: transparent;
+    border: 2px solid var(--color-gray-grid);
+    color: var(--color-white);
+    clip-path: none;
+}
+
+.buttonOutline:hover {
+    border-color: var(--color-neon-green);
+    color: var(--color-neon-green);
+    background: rgba(57, 255, 20, 0.05);
+}
+
+.button:hover {
+    background: #ff1f4b;
+    transform: scale(1.02);
+}
+
+.textBtn {
+    background: none;
+    border: none;
+    color: var(--color-gray-grid);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.textBtn:hover {
+    color: var(--color-white);
+}
+
+.success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.qrContainer {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 4px;
+    position: relative;
+}
+
+.qrContainer::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px dashed var(--color-gray-grid);
+    z-index: -1;
+}
+
+.instruction {
+    font-family: var(--font-sub);
+    font-size: 1.5rem;
+    color: var(--color-white);
+    max-width: 250px;
+}
+
+.dataDisplay {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.inputGroup .checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    background: transparent;
+    border: 2px solid var(--color-white);
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    margin: 0;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    /* Critical for alignment */
+}
+
+.inputGroup .checkbox::before {
+    content: "✔";
+    color: black;
+    font-size: 14px;
+    font-weight: 900;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    line-height: 1;
+}
+
+.inputGroup .checkbox:checked {
+    background: var(--color-neon-green);
+    border-color: var(--color-neon-green);
+}
+
+.inputGroup .checkbox:checked::before {
+    transform: scale(1);
+}
