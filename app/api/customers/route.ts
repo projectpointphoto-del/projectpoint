@@ -21,7 +21,7 @@ export async function GET() {
             phone: reg.customer.phone,
             event: reg.event.name,
             eventType: reg.event.type,
-            qrData: reg.qrCodeData,
+            qrData: reg.qrCode,
             createdAt: reg.createdAt
         }));
 
