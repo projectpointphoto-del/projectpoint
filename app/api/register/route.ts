@@ -30,19 +30,16 @@ export async function POST(request: Request) {
             const slug = `walk-in-${dateStr}`;
 
             const defaultEvent = await prisma.event.upsert({
-                where: { id: 'walk-in-' + dateStr }, // Use ID since Slug is gone, or findFirst
+                where: { id: 'walk-in-' + dateStr },
                 update: {},
                 create: {
+                    id: 'walk-in-' + dateStr,
                     name: `Walk-in (${dateStr})`,
-                    // slug removed
                     date: new Date(dateStr),
                     type: 'FIELD'
                 }
             });
-            // Actually, since slug is removed, we should query by name+date or just create.
-            // Simplified: Just findFirst where name = Walk-in...
-
-            // ... (fixing below)
+            targetEventId = defaultEvent.id;
         }
 
         // 3. Create Registration
