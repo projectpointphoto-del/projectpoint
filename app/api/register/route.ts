@@ -54,7 +54,12 @@ export async function POST(request: Request) {
             }
         });
 
-        // ...
+        // 4. Construct the actual QR Data
+        const actualQrData = JSON.stringify({
+            id: registration.id,
+            name: customer.name,
+            type: type || 'FIELD'
+        });
 
         // Update with final QR Data
         const finalReg = await prisma.registration.update({
