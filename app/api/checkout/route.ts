@@ -24,7 +24,7 @@ export async function POST(request: Request) {
                             name: 'Event Registration',
                             description: 'Access to event photos',
                         },
-                        unit_amount: 1000,
+                        unit_amount: 2500,
                     },
                     quantity: 1,
                 },
