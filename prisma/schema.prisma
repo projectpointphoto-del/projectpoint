@@ -15,6 +15,7 @@ model Event {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   registrations Registration[]
+  photos        Photo[]
 }
 
 
@@ -27,6 +28,7 @@ model Customer {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   registrations Registration[]
+  photos        Photo[]
 }
 
 model Registration {
