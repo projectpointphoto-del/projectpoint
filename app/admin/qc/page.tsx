@@ -7,6 +7,7 @@ export default function AdminQCPoint() {
     const [photos, setPhotos] = useState<any[]>([]);
     const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
 
     // Fetch pending photos AND customers
     useEffect(() => {
@@ -88,10 +89,61 @@ export default function AdminQCPoint() {
         }
     };
 
+    const handleManualUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+        setUploading(true);
+
+        const formData = new FormData();
+        Array.from(e.target.files).forEach(file => {
+            formData.append('file', file);
+            // Note: Our current API handles one file at a time or we need to update it?
+            // The API expects 'file' field. If we send multiple, we might need to loop.
+            // Let's loop for simplicity to ensure each gets a signature.
+        });
+
+        // Actually, let's loop client side to be safe with our simple API
+        try {
+            for (const file of Array.from(e.target.files)) {
+                const fd = new FormData();
+                fd.append('file', file);
+                await fetch('/api/upload', {
+                    method: 'POST',
+                    body: fd
+                });
+            }
+            // Refresh
+            fetchPhotos();
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <main className={styles.main}>
             <header className={styles.header}>
-                <h1>QC <span className="text-neon">STATION</span></h1>
+                <div>
+                    <h1>QC <span className="text-neon">STATION</span></h1>
+                    <div style={{ marginTop: '10px' }}>
+                        <label style={{
+                            background: '#333', padding: '8px 15px', color: 'white',
+                            cursor: 'pointer', border: '1px solid gray', fontSize: '0.9rem',
+                            display: 'inline-flex', alignItems: 'center', gap: '5px'
+                        }}>
+                            {uploading ? 'UPLOADING...' : '📤 UPLOAD PHOTOS (MANUAL)'}
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleManualUpload}
+                                style={{ display: 'none' }}
+                                disabled={uploading}
+                            />
+                        </label>
+                    </div>
+                </div>
                 <div className={styles.stats}>
                     PENDING: <span className="text-crimson">{photos.length}</span>
                 </div>
