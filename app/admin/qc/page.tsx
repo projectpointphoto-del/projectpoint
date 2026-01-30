@@ -122,7 +122,7 @@ export default function AdminQCPoint() {
                 <div>
                     <h1>QC <span className="text-neon">STATION</span></h1>
                     <p style={{ color: 'gray', fontSize: '0.9rem', marginBottom: '20px' }}>
-                        1. Select Files -> 2. Review & Assign -> 3. Link & Upload
+                        1. Select Files → 2. Review & Assign → 3. Link & Upload
                     </p>
 
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
