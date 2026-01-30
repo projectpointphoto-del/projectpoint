@@ -19,6 +19,7 @@ export async function POST(request: Request) {
         // 1. Parse Multipart Form Data
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
+        const customerId = formData.get('customerId') as string | null;
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -92,9 +93,9 @@ export async function POST(request: Request) {
                 format: data.format,
                 width: data.width,
                 height: data.height,
-                status: 'PENDING_REVIEW',
+                status: customerId ? 'APPROVED' : 'PENDING_REVIEW', // Auto-approve if linked immediately
                 eventId: defaultEventId,
-                // customerId: null // We don't know the customer yet
+                customerId: customerId || null
             }
         });
 

@@ -1,24 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './qc.module.css'; // We'll create this next
+import styles from './qc.module.css';
+
+// Type for a local file being "staged"
+type StagedPhoto = {
+    id: string; // Temp local ID
+    file: File;
+    preview: string;
+    customerId: string | null;
+    status: 'IDLE' | 'UPLOADING' | 'DONE' | 'ERROR';
+};
 
 export default function AdminQCPoint() {
-    const [photos, setPhotos] = useState<any[]>([]);
+    const [stagingItems, setStagingItems] = useState<StagedPhoto[]>([]);
     const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
-    const [selectedCustomer, setSelectedCustomer] = useState<{ [key: string]: string }>({});
 
-    // Fetch pending photos AND customers
+    // Modal State
+    const [modalImage, setModalImage] = useState<string | null>(null);
+
+    // Fetch customers only (Server photos are less relevant in this mode, but we can keep fetching them for history)
     useEffect(() => {
-        fetchPhotos();
         fetchCustomers();
-
-        // Poll for new photos every 5 seconds (simulates real-time)
-        const interval = setInterval(fetchPhotos, 5000);
-        return () => clearInterval(interval);
     }, []);
 
     const fetchCustomers = async () => {
@@ -31,227 +36,178 @@ export default function AdminQCPoint() {
         }
     };
 
-    const fetchPhotos = async () => {
-        try {
-            // We need an API route for this. For now, let's assume one exists or we build it.
-            // Let's create `app/api/admin/photos/route.ts` next.
-            const res = await fetch('/api/admin/photos?status=PENDING_REVIEW');
-            const data = await res.json();
-            if (data.photos) {
-                // Deduplicate based on ID to prevent UI flickering
-                setPhotos(prev => {
-                    const existingIds = new Set(prev.map(p => p.id));
-                    const newPhotos = data.photos.filter((p: any) => !existingIds.has(p.id));
-                    if (newPhotos.length === 0 && data.photos.length === prev.length) return prev;
-                    return [...newPhotos, ...prev].sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-                });
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+
+        const newItems: StagedPhoto[] = Array.from(e.target.files).map(file => ({
+            id: Math.random().toString(36).substr(2, 9),
+            file,
+            preview: URL.createObjectURL(file), // Local blob preview
+            customerId: null,
+            status: 'IDLE'
+        }));
+
+        setStagingItems(prev => [...prev, ...newItems]);
+        e.target.value = ''; // Reset input
     };
 
-    const handleAction = async (photoId: string, action: 'APPROVE' | 'REJECT') => {
-        // Optimistic UI update
-        setPhotos(prev => prev.filter(p => p.id !== photoId));
-
-        try {
-            await fetch('/api/admin/photos', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: photoId, status: action === 'APPROVE' ? 'APPROVED' : 'REJECTED' })
-            });
-        } catch (err) {
-            console.error(err);
-            alert('Action failed');
-            fetchPhotos(); // Revert
-        }
+    const assignCustomer = (itemId: string, customerId: string) => {
+        setStagingItems(prev => prev.map(item =>
+            item.id === itemId ? { ...item, customerId } : item
+        ));
     };
 
-    const handleAssign = async (photoId: string, customerId: string) => {
-        // Optimistic: Remove from pending list (assuming it's now "processed" enough to hide, or keep it?)
-        // Let's keep it visible but maybe show a success indicator?
-        // Actually, users might want to verify.
-        // For now, let's just make the API call and maybe flash the card green.
+    const assignAll = (customerId: string) => {
+        // Assign ALL idle items to this customer
+        setStagingItems(prev => prev.map(item =>
+            item.status === 'IDLE' ? { ...item, customerId } : item
+        ));
+    };
+
+    const removeItem = (itemId: string) => {
+        setStagingItems(prev => prev.filter(item => item.id !== itemId));
+    };
+
+    const uploadItem = async (item: StagedPhoto) => {
+        if (item.status !== 'IDLE' || !item.customerId) return; // Must have customer to upload in this flow
+
+        // Update status to UPLOADING
+        setStagingItems(prev => prev.map(p => p.id === item.id ? { ...p, status: 'UPLOADING' } : p));
+
         try {
-            const res = await fetch('/api/admin/photos', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: photoId, customerId, status: 'APPROVED' }) // Auto-approve on link
-            });
+            const fd = new FormData();
+            fd.append('file', item.file);
+            fd.append('customerId', item.customerId); // Send link immediately
+
+            const res = await fetch('/api/upload', { method: 'POST', body: fd });
+
             if (res.ok) {
-                // Remove from list as it is now APPROVED and assigned
-                setPhotos(prev => prev.filter(p => p.id !== photoId));
+                setStagingItems(prev => prev.map(p => p.id === item.id ? { ...p, status: 'DONE' } : p));
+                // Auto-remove done items after 2 seconds? Or keep them as "Done"?
+                // Let's keep them briefly then remove implies "Moved to Server"
+                setTimeout(() => removeItem(item.id), 2000);
+            } else {
+                setStagingItems(prev => prev.map(p => p.id === item.id ? { ...p, status: 'ERROR' } : p));
             }
         } catch (e) {
-            console.error(e);
-            alert("Failed to link customer");
+            setStagingItems(prev => prev.map(p => p.id === item.id ? { ...p, status: 'ERROR' } : p));
         }
     };
 
-    const handleManualUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files?.length) return;
-        const files = Array.from(e.target.files);
+    const handleLinkAll = async () => {
+        const toUpload = stagingItems.filter(i => i.status === 'IDLE' && i.customerId);
+        if (toUpload.length === 0) {
+            alert("No photos assigned to customers yet.");
+            return;
+        }
 
         setUploading(true);
-        setUploadProgress({ current: 0, total: files.length });
-
-        // Loop client side
-        let successCount = 0;
-        let errors: string[] = [];
-
-        try {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                setUploadProgress({ current: i + 1, total: files.length });
-
-                const fd = new FormData();
-                fd.append('file', file);
-
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: fd
-                });
-
-                if (res.ok) {
-                    successCount++;
-                } else {
-                    const errData = await res.json().catch(() => ({}));
-                    const errMsg = errData.error || res.statusText || 'Unknown Error';
-                    errors.push(`${file.name}: ${errMsg}`);
-                    console.error(`Upload failed for ${file.name}:`, errMsg);
-                }
-            }
-
-            // Refresh grid
-            fetchPhotos();
-
-            // Feedback
-            if (successCount === files.length) {
-                // All good
-            } else if (successCount === 0) {
-                // Total failure
-                const uniqueErrors = Array.from(new Set(errors)).slice(0, 3).join('\n');
-                alert(`UPLOAD FAILED ❌\n\nReason:\n${uniqueErrors}`);
-            } else {
-                // Partial
-                alert(`Uploaded ${successCount}/${files.length} photos.\n\nFailures:\n${errors.slice(0, 3).join('\n')}`);
-            }
-
-        } catch (err: any) {
-            console.error(err);
-            alert(`CRITICAL ERROR: ${err.message}`);
-        } finally {
-            setUploading(false);
-            setUploadProgress({ current: 0, total: 0 });
-            e.target.value = '';
+        // Process sequentially
+        for (const item of toUpload) {
+            await uploadItem(item);
         }
+        setUploading(false);
     };
 
     return (
         <main className={styles.main}>
+            {/* Modal */}
+            {modalImage && (
+                <div className={styles.modal} onClick={() => setModalImage(null)}>
+                    <img src={modalImage} alt="Full View" />
+                </div>
+            )}
+
             <header className={styles.header}>
                 <div>
                     <h1>QC <span className="text-neon">STATION</span></h1>
-                    <div style={{ marginTop: '15px' }}>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            {/* File Upload */}
-                            <label className={styles.uploadBtn}>
-                                {uploading ? `⏳ ${uploadProgress.current}/${uploadProgress.total}` : '⚡ UPLOAD FILES'}
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={handleManualUpload}
-                                    style={{ display: 'none' }}
-                                    disabled={uploading}
-                                />
-                            </label>
+                    <p style={{ color: 'gray', fontSize: '0.9rem', marginBottom: '20px' }}>
+                        1. Select Files -> 2. Review & Assign -> 3. Link & Upload
+                    </p>
 
-                            {/* Folder Upload (Chrome/Edge Only) */}
-                            <label className={styles.uploadBtn} style={{ background: '#333', border: '1px solid gray', color: 'white' }}>
-                                📁 UPLOAD FOLDER
-                                <input
-                                    type="file"
-                                    // @ts-ignore
-                                    webkitdirectory=""
-                                    directory=""
-                                    multiple
-                                    onChange={handleManualUpload}
-                                    style={{ display: 'none' }}
-                                    disabled={uploading}
-                                />
-                            </label>
-                        </div>
-                        <small style={{ display: 'block', color: 'gray', marginTop: '5px', fontSize: '0.7rem' }}>
-                            Select files or a folder to process.
-                        </small>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {/* File Select */}
+                        <label className={styles.uploadBtn}>
+                            📂 SELECT PHOTOS TO PROCESS
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                style={{ display: 'none' }}
+                            />
+                        </label>
+
+                        {/* Link All Button */}
+                        {stagingItems.some(i => i.status === 'IDLE' && i.customerId) && (
+                            <button
+                                onClick={handleLinkAll}
+                                className={styles.linkAllBtn}
+                                disabled={uploading}
+                            >
+                                {uploading ? 'UPLOADING...' : '⚡ LINK ALL ASSIGNED'}
+                            </button>
+                        )}
                     </div>
                 </div>
                 <div className={styles.stats}>
-                    PENDING: <span className="text-crimson">{photos.length}</span>
+                    STAGED: <span className="text-neon">{stagingItems.length}</span>
                 </div>
             </header>
 
+            {/* Staging Grid */}
             <div className={styles.grid}>
-                {photos.length === 0 && !loading && (
+                {stagingItems.length === 0 && (
                     <div className={styles.empty}>
-                        <h2>NO PHOTOS PENDING</h2>
-                        <p>Waiting for Uploads in `watched-photos`...</p>
+                        <h2>READY TO PROCESS</h2>
+                        <p>Select photos to begin local review.</p>
                     </div>
                 )}
 
-                {photos.map(photo => (
-                    <div key={photo.id} className={styles.card}>
-                        <div className={styles.imageContainer}>
-                            <img src={photo.url} alt="QC Pending" />
-                            <div className={styles.meta}>
-                                {new Date(photo.uploadedAt).toLocaleTimeString()}
-                            </div>
+                {stagingItems.map(item => (
+                    <div key={item.id} className={`${styles.card} ${item.status === 'DONE' ? styles.cardDone : ''}`}>
+                        <div className={styles.imageContainer} onClick={() => setModalImage(item.preview)}>
+                            <img src={item.preview} alt="Local Preview" />
+                            {item.status === 'UPLOADING' && <div className={styles.overlay}>⏳</div>}
+                            {item.status === 'DONE' && <div className={styles.overlay}>✅</div>}
+                            {item.status === 'ERROR' && <div className={styles.overlay}>❌</div>}
                         </div>
 
-                        {/* Customer Linker */}
-                        <div style={{ padding: '10px', borderTop: '1px solid #333', display: 'flex', gap: '5px' }}>
+                        {/* Controls */}
+                        <div style={{ padding: '10px', background: '#111' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                <button className={styles.iconBtn} onClick={() => removeItem(item.id)}>🗑️</button>
+                                <button className={styles.iconBtn} onClick={() => setModalImage(item.preview)}>🔍</button>
+                            </div>
+
                             <select
-                                value={selectedCustomer[photo.id] || ""}
-                                onChange={(e) => setSelectedCustomer(prev => ({ ...prev, [photo.id]: e.target.value }))}
-                                style={{ flex: 1, padding: '5px', background: '#222', color: 'white', border: '1px solid #444' }}
+                                value={item.customerId || ""}
+                                onChange={(e) => assignCustomer(item.id, e.target.value)}
+                                className={styles.select}
+                                disabled={item.status !== 'IDLE'}
                             >
                                 <option value="">Select Customer...</option>
                                 {customers.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name} ({c.event})</option>
+                                    <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
                             </select>
+
                             <button
-                                disabled={!selectedCustomer[photo.id]}
-                                onClick={() => handleAssign(photo.id, selectedCustomer[photo.id])}
+                                disabled={!item.customerId || item.status !== 'IDLE'}
+                                onClick={() => uploadItem(item)}
                                 style={{
-                                    background: selectedCustomer[photo.id] ? '#00f3ff' : '#333',
-                                    color: selectedCustomer[photo.id] ? 'black' : 'gray',
+                                    width: '100%',
+                                    marginTop: '8px',
+                                    padding: '8px',
+                                    background: item.customerId ? '#00f3ff' : '#222',
+                                    color: item.customerId ? 'black' : 'gray',
                                     border: 'none',
                                     fontWeight: 'bold',
-                                    cursor: selectedCustomer[photo.id] ? 'pointer' : 'not-allowed',
-                                    padding: '0 10px'
+                                    cursor: item.customerId ? 'pointer' : 'not-allowed',
+                                    opacity: item.customerId ? 1 : 0.5
                                 }}
                             >
-                                LINK
-                            </button>
-                        </div>
-
-                        <div className={styles.actions}>
-                            <button
-                                onClick={() => handleAction(photo.id, 'REJECT')}
-                                className={styles.rejectBtn}
-                            >
-                                ✕
-                            </button>
-                            <button
-                                onClick={() => handleAction(photo.id, 'APPROVE')}
-                                className={styles.approveBtn}
-                            >
-                                ✓
+                                {item.status === 'DONE' ? 'UPLOADED' : 'LINK & UPLOAD'}
                             </button>
                         </div>
                     </div>
