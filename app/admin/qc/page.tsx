@@ -100,10 +100,11 @@ export default function AdminQCPoint() {
 
         // Loop client side
         let successCount = 0;
+        let errors: string[] = [];
+
         try {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                // Update progress
                 setUploadProgress({ current: i + 1, total: files.length });
 
                 const fd = new FormData();
@@ -113,21 +114,38 @@ export default function AdminQCPoint() {
                     method: 'POST',
                     body: fd
                 });
-                if (res.ok) successCount++;
+
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    const errMsg = errData.error || res.statusText || 'Unknown Error';
+                    errors.push(`${file.name}: ${errMsg}`);
+                    console.error(`Upload failed for ${file.name}:`, errMsg);
+                }
             }
-            // Refresh
+
+            // Refresh grid
             fetchPhotos();
-            // Optional: Provide feedback if some failed
-            if (successCount < files.length) {
-                alert(`Uploaded ${successCount}/${files.length} photos. Some failed.`);
+
+            // Feedback
+            if (successCount === files.length) {
+                // All good
+            } else if (successCount === 0) {
+                // Total failure
+                const uniqueErrors = Array.from(new Set(errors)).slice(0, 3).join('\n');
+                alert(`UPLOAD FAILED ❌\n\nReason:\n${uniqueErrors}`);
+            } else {
+                // Partial
+                alert(`Uploaded ${successCount}/${files.length} photos.\n\nFailures:\n${errors.slice(0, 3).join('\n')}`);
             }
-        } catch (err) {
+
+        } catch (err: any) {
             console.error(err);
-            alert("Upload failed critically.");
+            alert(`CRITICAL ERROR: ${err.message}`);
         } finally {
             setUploading(false);
             setUploadProgress({ current: 0, total: 0 });
-            // Reset input value to allow re-uploading same files if needed
             e.target.value = '';
         }
     };
