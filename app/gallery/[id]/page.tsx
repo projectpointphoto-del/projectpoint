@@ -38,8 +38,9 @@ async function getPhotos(registration: any) {
     });
 }
 
-export default async function GalleryPage({ params }: { params: { id: string } }) {
-    const registration = await getRegistration(params.id);
+export default async function GalleryPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const registration = await getRegistration(id);
 
     if (!registration) {
         return notFound();
@@ -62,10 +63,15 @@ export default async function GalleryPage({ params }: { params: { id: string } }
             <section className={styles.gallery}>
                 {photos.length === 0 ? (
                     <div className={styles.emptyState}>
-                        <h2>PHOTOS PROCESSING...</h2>
-                        <p>Your photos are being edited and tagged.</p>
-                        <p>Refresh this page in a few minutes.</p>
-                        <div className={styles.loader}></div>
+                        <div className={styles.scannerAnimation}></div>
+                        <h2 className={styles.neonText}>PHOTOS INCOMING</h2>
+                        <p>Our team is currently tagging and editing your shots.</p>
+                        <p style={{ color: '#666', marginTop: '10px' }}>
+                            We upload in real-time. Please keep this tab open.
+                        </p>
+                        <button onClick={() => window.location.reload()} className={styles.refreshBtn}>
+                            REFRESH STATUS
+                        </button>
                     </div>
                 ) : (
                     <div className={styles.grid}>
@@ -74,13 +80,26 @@ export default async function GalleryPage({ params }: { params: { id: string } }
                                 <img src={photo.url} alt="Event Photo" loading="lazy" />
                                 <div className={styles.actions}>
                                     <a href={photo.url} download target="_blank" rel="noopener noreferrer" className={styles.downloadBtn}>
-                                        DOWNLOAD HIGH-RES
+                                        DOWNLOAD
                                     </a>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
+            </section>
+
+            {/* Print Shop Upsell */}
+            <section className={styles.printSection}>
+                <h3>WANT PRO PRINTS?</h3>
+                <p>Order high-quality physical prints delivered to your door.</p>
+                <div className={styles.printPartners}>
+                    <span>POWERED BY</span>
+                    <strong>H&H COLOR LAB</strong>
+                </div>
+                <a href="https://www.hhcolorlab.com/" target="_blank" rel="noopener noreferrer" className={styles.printBtn}>
+                    ORDER PRINTS
+                </a>
             </section>
 
             {/* Footer */}

@@ -88,8 +88,94 @@
 
 .emptyState {
     text-align: center;
-    padding: 50px 20px;
+    padding: 60px 20px;
+    background: #0a0a0a;
+    border: 1px dashed #333;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.neonText {
+    color: #fff;
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.scannerAnimation {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00f3ff, transparent);
+    animation: scan 2s infinite linear;
+    margin-bottom: 20px;
+}
+
+@keyframes scan {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.refreshBtn {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.refreshBtn:hover {
+    background: rgba(0, 243, 255, 0.1);
+}
+
+.printSection {
+    margin: 40px 20px;
+    padding: 30px;
+    background: #111;
+    border-top: 2px solid #ff003c;
+    text-align: center;
+}
+
+.printSection h3 {
+    color: #fff;
+    font-size: 1.2rem;
+    margin: 0 0 10px 0;
+}
+
+.printPartners {
+    font-size: 0.7rem;
     color: #666;
+    margin: 15px 0;
+    letter-spacing: 1px;
+}
+
+.printPartners strong {
+    color: #888;
+    margin-left: 5px;
+}
+
+.printBtn {
+    background: #ff003c;
+    color: white;
+    text-decoration: none;
+    padding: 12px 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.printBtn:hover {
+    transform: scale(1.05);
 }
 
 .loader {
