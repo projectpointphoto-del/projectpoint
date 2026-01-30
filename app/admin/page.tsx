@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import '@/app/globals.css';
-import BatchProcessor from './BatchProcessor';
+import AdminQCPoint from './qc/page';
 import EventManager from './EventManager';
 import CustomerList from './CustomerList';
 
@@ -63,7 +63,7 @@ export default function AdminPage() {
 
             {/* Content Area */}
             <div>
-                {activeTab === 'PROCESS' && <BatchProcessor />}
+                {activeTab === 'PROCESS' && <AdminQCPoint />}
                 {activeTab === 'EVENTS' && <EventManager />}
                 {activeTab === 'CUSTOMERS' && <CustomerList />}
             </div>

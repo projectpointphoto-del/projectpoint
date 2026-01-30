@@ -126,13 +126,9 @@ export default function AdminQCPoint() {
             <header className={styles.header}>
                 <div>
                     <h1>QC <span className="text-neon">STATION</span></h1>
-                    <div style={{ marginTop: '10px' }}>
-                        <label style={{
-                            background: '#333', padding: '8px 15px', color: 'white',
-                            cursor: 'pointer', border: '1px solid gray', fontSize: '0.9rem',
-                            display: 'inline-flex', alignItems: 'center', gap: '5px'
-                        }}>
-                            {uploading ? 'UPLOADING...' : '📤 UPLOAD PHOTOS (MANUAL)'}
+                    <div style={{ marginTop: '15px' }}>
+                        <label className={styles.uploadBtn}>
+                            {uploading ? '⏳ UPLOADING...' : '⚡ UPLOAD PHOTOS'}
                             <input
                                 type="file"
                                 multiple
@@ -142,6 +138,9 @@ export default function AdminQCPoint() {
                                 disabled={uploading}
                             />
                         </label>
+                        <small style={{ display: 'block', color: 'gray', marginTop: '5px', fontSize: '0.7rem' }}>
+                            Select files to process & assign
+                        </small>
                     </div>
                 </div>
                 <div className={styles.stats}>

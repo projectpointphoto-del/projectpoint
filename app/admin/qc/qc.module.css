@@ -1,63 +1,49 @@
 .main {
-    min-height: 100vh;
-    background: #000;
-    color: #fff;
-    padding: 20px;
-    font-family: 'Inter', sans-serif;
+    padding: 2rem;
+    color: white;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    margin-bottom: 2rem;
     border-bottom: 1px solid #333;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-}
-
-.header h1 {
-    font-size: 1.5rem;
-    margin: 0;
+    padding-bottom: 1rem;
 }
 
 .stats {
-    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
-}
-
-.empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 50px;
-    color: #666;
-    border: 1px dashed #333;
-    border-radius: 8px;
 }
 
 .card {
     background: #111;
     border: 1px solid #333;
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
+    position: relative;
     transition: transform 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-2px);
     border-color: #555;
+    transform: translateY(-2px);
 }
 
 .imageContainer {
     position: relative;
+    width: 100%;
     aspect-ratio: 2/3;
-    /* Portrait style */
-    background: #222;
+    background: #000;
 }
 
 .imageContainer img {
@@ -74,40 +60,77 @@
     background: rgba(0, 0, 0, 0.7);
     padding: 5px;
     font-size: 0.7rem;
+    color: #ccc;
     text-align: center;
-    font-family: monospace;
 }
 
 .actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     border-top: 1px solid #333;
 }
 
-.actions button {
-    flex: 1;
-    background: none;
+.rejectBtn {
+    background: #220000;
+    color: #ff003c;
     border: none;
-    padding: 15px;
-    cursor: pointer;
+    padding: 10px;
     font-size: 1.2rem;
+    cursor: pointer;
     transition: background 0.2s;
 }
 
-.rejectBtn {
-    color: #666;
-    border-right: 1px solid #333 !important;
-}
-
 .rejectBtn:hover {
-    background: #300;
-    color: var(--color-crimson);
+    background: #ff003c;
+    color: white;
 }
 
 .approveBtn {
-    color: #666;
+    background: #002200;
+    color: #00f3ff;
+    border: none;
+    padding: 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-left: 1px solid #333;
 }
 
 .approveBtn:hover {
-    background: #030;
-    color: var(--color-neon-green);
+    background: #00f3ff;
+    color: black;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 100px;
+    background: #050505;
+    border: 2px dashed #222;
+    border-radius: 8px;
+    color: #444;
+}
+
+.uploadBtn {
+    background: linear-gradient(45deg, #111, #222);
+    border: 1px solid #00f3ff;
+    color: #00f3ff;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+}
+
+.uploadBtn:hover {
+    background: #00f3ff;
+    color: black;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
 }
