@@ -84,6 +84,18 @@ export default function CustomerList() {
                             <td style={{ padding: '10px' }}>{c.email}<br /><small>{c.phone}</small></td>
                             <td style={{ padding: '10px', display: 'flex', gap: '5px' }}>
                                 <button
+                                    onClick={() => window.open(`/gallery/${c.id}`, '_blank')}
+                                    style={{
+                                        background: 'transparent',
+                                        color: 'var(--color-neon-blue)',
+                                        border: '1px solid var(--color-neon-blue)',
+                                        padding: '5px 10px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold'
+                                    }}>
+                                    GALLERY
+                                </button>
+                                <button
                                     onClick={() => setSelectedQr(c.qrData)}
                                     style={{
                                         background: '#333',
@@ -92,7 +104,7 @@ export default function CustomerList() {
                                         padding: '5px 10px',
                                         cursor: 'pointer'
                                     }}>
-                                    VIEW QR
+                                    QR
                                 </button>
                                 <button
                                     onClick={() => deleteCustomer(c.id)}
