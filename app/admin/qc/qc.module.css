@@ -1,0 +1,113 @@
+.main {
+    min-height: 100vh;
+    background: #000;
+    color: #fff;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.stats {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px;
+    color: #666;
+    border: 1px dashed #333;
+    border-radius: 8px;
+}
+
+.card {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: #555;
+}
+
+.imageContainer {
+    position: relative;
+    aspect-ratio: 2/3;
+    /* Portrait style */
+    background: #222;
+}
+
+.imageContainer img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px;
+    font-size: 0.7rem;
+    text-align: center;
+    font-family: monospace;
+}
+
+.actions {
+    display: flex;
+    border-top: 1px solid #333;
+}
+
+.actions button {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+}
+
+.rejectBtn {
+    color: #666;
+    border-right: 1px solid #333 !important;
+}
+
+.rejectBtn:hover {
+    background: #300;
+    color: var(--color-crimson);
+}
+
+.approveBtn {
+    color: #666;
+}
+
+.approveBtn:hover {
+    background: #030;
+    color: var(--color-neon-green);
+}
