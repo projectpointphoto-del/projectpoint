@@ -6,7 +6,41 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { name, phone, email, eventId, type, displayName, templateId } = body;
 
-        // ... (existing code)
+        // 1. Create or Find Customer (Simple logic: assuming email/phone unique enough for demo)
+        // In a real app we might upsert based on email
+        let customer = await prisma.customer.findUnique({
+            where: { email },
+        });
+
+        if (!customer) {
+            customer = await prisma.customer.create({
+                data: { name, phone, email },
+            });
+        }
+
+        // 2. Determine Event
+        // If no eventId provided (Field Walk-in), we might need a default "Walk-in" event
+        // For now, if eventId is missing, we create a dummy "Field" event or check if one exists
+        let targetEventId = eventId;
+        if (!targetEventId) {
+            // "Daily Walk-in" Logic:
+            // Automatically create a separate event container for TODAY (San Antonio Time) if it doesn't exist.
+            // Using en-CA (Canada) results in YYYY-MM-DD format, forcing America/Chicago timezone.
+            const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+            // const slug = `walk-in-${dateStr}`; // Unused var
+
+            const defaultEvent = await prisma.event.upsert({
+                where: { id: 'walk-in-' + dateStr },
+                update: {},
+                create: {
+                    id: 'walk-in-' + dateStr,
+                    name: `Walk-in (${dateStr})`,
+                    date: new Date(dateStr),
+                    type: 'FIELD'
+                }
+            });
+            targetEventId = defaultEvent.id;
+        }
 
         // 3. Create or Find Registration
         const registration = await prisma.registration.upsert({
