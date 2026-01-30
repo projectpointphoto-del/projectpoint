@@ -29,7 +29,7 @@ export default function AdminPage() {
                         fontSize: '1.2rem'
                     }}
                 >
-                    IMAGE ENGINE
+                    QC STATION
                 </button>
                 <button
                     onClick={() => setActiveTab('EVENTS')}
