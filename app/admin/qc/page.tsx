@@ -5,16 +5,28 @@ import styles from './qc.module.css'; // We'll create this next
 
 export default function AdminQCPoint() {
     const [photos, setPhotos] = useState<any[]>([]);
+    const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch pending photos
+    // Fetch pending photos AND customers
     useEffect(() => {
         fetchPhotos();
+        fetchCustomers();
 
         // Poll for new photos every 5 seconds (simulates real-time)
         const interval = setInterval(fetchPhotos, 5000);
         return () => clearInterval(interval);
     }, []);
+
+    const fetchCustomers = async () => {
+        try {
+            const res = await fetch('/api/customers');
+            const data = await res.json();
+            setCustomers(data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const fetchPhotos = async () => {
         try {
@@ -55,6 +67,27 @@ export default function AdminQCPoint() {
         }
     };
 
+    const handleAssign = async (photoId: string, customerId: string) => {
+        // Optimistic: Remove from pending list (assuming it's now "processed" enough to hide, or keep it?)
+        // Let's keep it visible but maybe show a success indicator?
+        // Actually, users might want to verify.
+        // For now, let's just make the API call and maybe flash the card green.
+        try {
+            const res = await fetch('/api/admin/photos', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: photoId, customerId, status: 'APPROVED' }) // Auto-approve on link
+            });
+            if (res.ok) {
+                // Remove from list as it is now APPROVED and assigned
+                setPhotos(prev => prev.filter(p => p.id !== photoId));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to link customer");
+        }
+    };
+
     return (
         <main className={styles.main}>
             <header className={styles.header}>
@@ -80,6 +113,24 @@ export default function AdminQCPoint() {
                                 {new Date(photo.uploadedAt).toLocaleTimeString()}
                             </div>
                         </div>
+
+                        {/* Customer Linker */}
+                        <div style={{ padding: '10px', borderTop: '1px solid #333' }}>
+                            <select
+                                onChange={async (e) => {
+                                    if (e.target.value) {
+                                        await handleAssign(photo.id, e.target.value);
+                                    }
+                                }}
+                                style={{ width: '100%', padding: '5px', background: '#222', color: 'white', border: '1px solid #444' }}
+                            >
+                                <option value="">Select Customer...</option>
+                                {customers.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name} ({c.event})</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div className={styles.actions}>
                             <button
                                 onClick={() => handleAction(photo.id, 'REJECT')}

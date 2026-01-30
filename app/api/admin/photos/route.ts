@@ -27,15 +27,19 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
     try {
         const body = await request.json();
-        const { id, status } = body;
+        const { id, status, customerId } = body;
 
-        if (!id || !status) {
-            return NextResponse.json({ error: 'Missing ID or Status' }, { status: 400 });
+        if (!id) {
+            return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
         }
+
+        const updateData: any = {};
+        if (status) updateData.status = status;
+        if (customerId) updateData.customerId = customerId;
 
         const updatedPhoto = await prisma.photo.update({
             where: { id },
-            data: { status }
+            data: updateData
         });
 
         return NextResponse.json({ success: true, photo: updatedPhoto });
