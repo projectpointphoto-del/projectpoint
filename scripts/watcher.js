@@ -3,7 +3,10 @@ const path = require('path');
 const { FormData } = require('node:util'); // Use native FormData if available, or just construct body manually
 
 // Configuration
-const WATCH_DIR = path.join(__dirname, '../watched-photos');
+// Accept directory from command line arguments, or default to internal folder
+const targetDir = process.argv[2] || path.join(__dirname, '../watched-photos');
+const WATCH_DIR = path.resolve(targetDir);
+
 const API_URL = 'http://localhost:3000/api/upload';
 const BUFFER_MS = 30000; // 30 seconds
 
