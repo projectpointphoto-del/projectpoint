@@ -179,7 +179,7 @@ export default function AdminQCPoint() {
                     if (g.id === group.id) {
                         return {
                             ...g,
-                            photos: g.photos.map(p => p.id === photo.id ? { ...p, status: (res.ok ? 'DONE' : 'ERROR') as const } : p)
+                            photos: g.photos.map(p => p.id === photo.id ? { ...p, status: res.ok ? 'DONE' : 'ERROR' } : p)
                         };
                     }
                     return g;
